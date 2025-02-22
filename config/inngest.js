@@ -26,7 +26,7 @@ export const syncUserUpdation = inngest.createFunction(
   {
     id: 'update-user-from-clerk'
   },
-    {event: 'clerk/user.updated'},
+    {event: 'clerk/user.deleted'},
     async ({event}) => {
       const {id, first_name,  last_name, email_addresses, image_url} = event.data
       const userData = {
