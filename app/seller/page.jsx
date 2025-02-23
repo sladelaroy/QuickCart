@@ -1,20 +1,59 @@
-'use client'
+"use client";
 import React, { useState } from "react";
 import { assets } from "@/assets/assets";
 import Image from "next/image";
+import { useAppContext } from "@/context/AppContext";
+import toast from "react-hot-toast";
+import axios from "axios"
 
 const AddProduct = () => {
-
+  const { getToken } = useAppContext();
   const [files, setFiles] = useState([]);
-  const [name, setName] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Earphone');
-  const [price, setPrice] = useState('');
-  const [offerPrice, setOfferPrice] = useState('');
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("Earphone");
+  const [price, setPrice] = useState("");
+  const [offerPrice, setOfferPrice] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const formData = new FormData();
+
+    formData.append("name", name);
+    formData.append("description", description);
+    formData.append("price", price);
+    formData.append("offerPrice", offerPrice);
+    formData.append("category", category);
+
+    for (let i = 0; i < files.length; i++) {
+      formData.append("images", files[i]);
+    }
+
+    try {
+      const token = await getToken()
+      console.log(token);
+      
+
+      
+      const { data } = await axios.post("/api/products/add", formData, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (data.success) {
+        setFiles([]);
+        setName("");
+        setDescription("");
+        setCategory("Earphone");
+        setPrice("");
+        setOfferPrice("");
+        toast.success(data.message)
+      } else {
+        toast.error(error.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   return (
@@ -23,25 +62,32 @@ const AddProduct = () => {
         <div>
           <p className="text-base font-medium">Product Image</p>
           <div className="flex flex-wrap items-center gap-3 mt-2">
-
             {[...Array(4)].map((_, index) => (
               <label key={index} htmlFor={`image${index}`}>
-                <input onChange={(e) => {
-                  const updatedFiles = [...files];
-                  updatedFiles[index] = e.target.files[0];
-                  setFiles(updatedFiles);
-                }} type="file" id={`image${index}`} hidden />
+                <input
+                  onChange={(e) => {
+                    const updatedFiles = [...files];
+                    updatedFiles[index] = e.target.files[0];
+                    setFiles(updatedFiles);
+                  }}
+                  type="file"
+                  id={`image${index}`}
+                  hidden
+                />
                 <Image
                   key={index}
                   className="max-w-24 cursor-pointer"
-                  src={files[index] ? URL.createObjectURL(files[index]) : assets.upload_area}
+                  src={
+                    files[index]
+                      ? URL.createObjectURL(files[index])
+                      : assets.upload_area
+                  }
                   alt=""
                   width={100}
                   height={100}
                 />
               </label>
             ))}
-
           </div>
         </div>
         <div className="flex flex-col gap-1 max-w-md">
@@ -124,7 +170,10 @@ const AddProduct = () => {
             />
           </div>
         </div>
-        <button type="submit" className="px-8 py-2.5 bg-orange-600 text-white font-medium rounded">
+        <button
+          type="submit"
+          className="px-8 py-2.5 bg-orange-600 text-white font-medium rounded"
+        >
           ADD
         </button>
       </form>
