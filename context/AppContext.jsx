@@ -45,11 +45,10 @@ export const AppContextProvider = (props) => {
 
       const token = await getToken();
 
-      console.log(token);
-
       const { data } = await axios.get("/api/user/data", {
         headers: { Authorization: `Bearer ${token}` }
       });
+      
 
       if (data.success) {
         setUserData(data.user);
@@ -134,13 +133,16 @@ export const AppContextProvider = (props) => {
     let totalAmount = 0;
     for (const items in cartItems) {
       let itemInfo = products.find((product) => product._id === items);
-      if (cartItems[items] > 0) {
+      
+      // console.log(`items: ${items}, itemInfo:`, itemInfo); // Debugging step
+      
+      if (itemInfo && cartItems[items] > 0) {
         totalAmount += itemInfo.offerPrice * cartItems[items];
       }
     }
     return Math.floor(totalAmount * 100) / 100;
   };
-
+  
   useEffect(() => {
     fetchProductData();
   }, []);

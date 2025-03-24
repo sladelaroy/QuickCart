@@ -14,7 +14,7 @@ const AddAddress = () => {
   const [address, setAddress] = useState({
     fullName: "",
     phoneNumber: "",
-    pincode: "",
+    pincode: 0,
     area: "",
     city: "",
     state: ""
@@ -22,7 +22,7 @@ const AddAddress = () => {
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
-    const token = getToken();
+    const token = await getToken();
 
     try {
       const { data } = await axios.post(
@@ -30,14 +30,21 @@ const AddAddress = () => {
         { address },
         { headers: { Authorization: `Bearer ${token}` } }
       );
+
+      console.log(address);
+      
       if (data.success) {
         toast.success(data.message);
         router.push("/cart");
       } else {
         toast.error(data.message);
+        console.log(data.message);
+        
       }
     } catch (error) {
       toast.error(error.message);
+      console.log(error);
+      
     }
   };
 

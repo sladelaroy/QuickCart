@@ -1,4 +1,4 @@
-import { addressDummyData } from "@/assets/assets";
+
 import { useAppContext } from "@/context/AppContext";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
@@ -22,21 +22,24 @@ const OrderSummary = () => {
 
   const fetchUserAddresses = async () => {
     try {
-      const token = getToken();
+      const token = await getToken();
       const { data } = await axios.get("/api/user/get-address", {
         headers: { Authorization: `Bearer ${token}` }
       });
       if (data.success) {
         setUserAddresses(data.addresses);
-        if (data.addresses.length > 0 ) {
-          setSelectedAddress(data.addresses[0])
+        // console.log(data.addresses);
+        
+        if (data.addresses.length > 0) {
+          setSelectedAddress(data.addresses[0]);
+          console.log(data.addresses[0]);
+          
         }
       } else {
-        toast.error(data.message)
+        toast.error(data.message);
       }
     } catch (error) {
-      toast.error(error.message)
-      
+      toast.error(error.message);
     }
   };
 
@@ -45,7 +48,45 @@ const OrderSummary = () => {
     setIsDropdownOpen(false);
   };
 
-  const createOrder = async () => {};
+  const createOrder = async () => {
+    try {
+      if (!selectedAddress) {
+        return toast.error("Please select an address");
+      }
+
+      let cartItemsArray = Object.keys(cartItems).map((key) => ({
+        product: key,
+        quantity: Number(cartItems[key])
+      }));
+      cartItemsArray = cartItemsArray.filter((item) => item.quantity > 0);
+      
+
+      if (cartItemsArray.length === 0) {
+        return toast.error("Cart is empty");
+      }
+
+      const token = await getToken();
+      
+      const { data } = await axios.post(
+        "/api/order/create",
+        {
+          address: selectedAddress,
+          items: cartItemsArray
+        },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+
+      if (data.success) {
+        toast.success(data.message);
+        setCartItems({});
+        router.push("/order-placed");
+      } else {
+        toast.error(data.message);
+      }
+    } catch (error) {
+      toast.error(error.message);
+    }
+  };
 
   useEffect(() => {
     fetchUserAddresses();
